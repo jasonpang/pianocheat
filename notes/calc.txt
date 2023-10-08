@@ -1,0 +1,29 @@
+
+
+  const calculatedWidth = useMemo(() => {
+    if (!children) {
+      return 25
+    }
+
+    const childNotes = React.Children.map(children, (child) => {
+      if (React.isValidElement(child) && (child as React.ReactElement<any>).type === Note) {
+        return child
+      } else return undefined
+    }).filter((x) => x)
+
+    const childNotesByOffset = groupBy(childNotes, (x) => x.props.offset)
+    const mostOffsetKey = Object.keys(childNotesByOffset).pop()
+    const rightmostOffsetNotes = childNotesByOffset[mostOffsetKey]
+    const longestDurationNote = rightmostOffsetNotes.sort((a, b) => a.props.duration - b.props.duration).pop()
+
+    const widths = getNoteWidths(longestDurationNote.props)
+
+    return (
+      STAFF_LEFT_MARGIN +
+      INTERNAL_MEASURE_MARGIN +
+      widths.leftMargin +
+      widths.leftCap +
+      widths.rightCap +
+      widths.numBeats * widths.beat
+    )
+  }, [children])

@@ -1,0 +1,37 @@
+
+<part> XXXXXXXXXX
+<staff>
+<duration>
+<forward>
+<measure> XXXXXXXXXX
+	<attributes> XXXXXXXXXX
+		<divisions> XXXXXXXXXX
+		<key> XXXXXXXXXX
+          <fifths>0</fifths> XXXXXXXXXX
+          <mode>major</mode> XXXXXXXXXX
+        </key> XXXXXXXXXX
+		<time> XXXXXXXXXX
+          <beats>4</beats> XXXXXXXXXX
+          <beat-type>4</beat-type> XXXXXXXXXX
+        </time> XXXXXXXXXX
+<backup>
+<rest/>
+<chord/>
+<note>
+	<pitch>
+	<step>
+	<alter>
+	<octave>
+<time-modification>
+	<actual-notes>
+	<normal-notes>
+<articulations>
+	<staccato>
+<notations>
+	<slur>
+	<tied>
+	<arpeggiate/>
+	<grace/>
+	<tuplet>
+	<ornaments>
+		<trill-mark>

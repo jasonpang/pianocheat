@@ -1,0 +1,1 @@
+- Add support for staccato notations and repeats (e.g. Minuet in G Major)

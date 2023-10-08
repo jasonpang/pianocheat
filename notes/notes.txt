@@ -1,0 +1,12 @@
+Text Shadow from wexond.net
+text-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px
+
+Button Background
+background-image: linear-gradient(to bottom, #ff9999, #ff5b5b),
+    linear-gradient(to bottom, #e5b1ff, #e5b1ff);
+
+Fonts:
+Crimson Pro
+Poppins
+Manrope
+Fivo Sans
