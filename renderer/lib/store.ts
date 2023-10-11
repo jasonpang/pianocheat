@@ -142,7 +142,6 @@ export const initialStore: Store = {
   }
 }
 
-console.log({ combineAndImmer, initialStore })
 export const useStore = create(
   combineAndImmer(initialStore, (set) => ({
     update: (fn: (store: Store) => void) =>

@@ -76,8 +76,6 @@ export default class MultiVoicePlayback {
     const noteReleaseQueue = this.upcomingNoteReleaseQueueForPlayers[player]
     const notePressQueue = this.upcomingNotePressQueueForPlayers[player]
     const pressedNotes = this.pressedNotesForPlayers[player]
-    console.log({ noteSets })
-    console.log({ a: noteSetTimes[cursor] })
 
     let cursorDecrement = 1
     let previousNoteSet =
@@ -104,7 +102,6 @@ export default class MultiVoicePlayback {
         : null
     while (nextNoteSet?.filter((x) => x.rest).length === nextNoteSet?.length) {
       cursorIncrement += 1
-      console.log('cursor increment from to:', cursor, cursor + cursorIncrement)
       nextNoteSet =
         cursor < noteSetTimes.length - 1
           ? noteSets[noteSetTimes[cursor + cursorIncrement]]

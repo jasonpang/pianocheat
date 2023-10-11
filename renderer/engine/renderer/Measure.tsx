@@ -99,12 +99,8 @@ export default React.memo(function Measure(props: MeasureProps) {
 
           for (const _player of Object.keys(noteSets)) {
             const player = _player as Player
-            console.log('player:', player)
-            console.log('newMeasureNumber:', newMeasureNumber)
             const measureInfoForPlayer =
               cachedNoteSetsByMeasure[player][newMeasureNumber]
-
-            console.log('measureInfoForPlayer:', measureInfoForPlayer)
 
             let targetNoteSetTime: number = 0
             if (!measureInfoForPlayer) {

@@ -11,12 +11,6 @@ const NavItems = [
     iconProps: {},
     href: '/play',
     label: 'Play'
-  },
-  {
-    icon: mdiCog,
-    iconProps: {},
-    href: '/settings',
-    label: 'Settings'
   }
 ]
 
