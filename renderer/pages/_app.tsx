@@ -37,7 +37,7 @@ export default function App(props: AppProps) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
-        <title>Piano Studio</title>
+        <title>PianoCheat</title>
       </Head>
       <ThemeProvider theme={theme}>
         <CssBaseline />

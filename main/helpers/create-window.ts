@@ -91,7 +91,7 @@ export default (
     height: 1600,
     useContentSize: false,
     center: true,
-    title: 'Piano Studio',
+    title: 'PianoCheat',
     icon: 'resources/icon.ico',
     autoHideMenuBar: true,
     backgroundColor: '#fff',

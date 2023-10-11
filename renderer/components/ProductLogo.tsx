@@ -13,7 +13,7 @@ export default function ProductLogo() {
           marginBottom: '0.65em'
         }}
       >
-        Piano Studio
+        PianoCheat
       </Typography>
     </Box>
   )
