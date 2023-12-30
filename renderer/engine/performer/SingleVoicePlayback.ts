@@ -37,13 +37,16 @@ export default class SingleVoicePlayback {
   constructor(private score: Record<Player, Record<number, ParsedNote[]>>) {
     const output = WebMidi.outputs.filter(
       (x) =>
+        x.name.toLowerCase().includes('E-MU XMidi1X1'.toLowerCase()) ||
         x.name.toLowerCase().includes('loopbe') ||
         x.name.toLowerCase().includes('iac driver')
     )[0]
 
     if (!output) {
-      console.log('Could not find LoopBe output.')
+      console.log('Could not find any usable default MIDI output.')
       return
+    } else {
+      console.log('MIDI Output:', output.name)
     }
 
     this.output = output

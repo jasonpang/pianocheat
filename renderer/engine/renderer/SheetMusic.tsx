@@ -8,6 +8,7 @@ import { CANVAS_MARGIN } from '../../vars'
 import ScorePage from './ScorePage'
 import SingleVoicePlayback from '../performer/SingleVoicePlayback'
 import Midi from '../midi/Midi'
+import MultiVoicePlayback from '../performer/MultiVoicePlayback'
 
 export interface SheetMusicProps {
   filePath: string
@@ -43,9 +44,9 @@ export default React.memo(function SheetMusic(props: SheetMusicProps) {
         'player-muted': 0
       }
       await promise
-      midi.setProcessor(new SingleVoicePlayback(performance.intermediateScore))
+      midi.setProcessor(new MultiVoicePlayback(performance.intermediateScore))
     })
-  }, [filePath])
+  }, [filePath, update])
 
   if (!performance) {
     return null

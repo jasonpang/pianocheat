@@ -50,7 +50,14 @@ export default class MultiVoicePlayback {
   }
 
   public processControlChange(e: InputEventControlchange) {
-    this.output.sendControlChange(e.data[0], e.value)
+    const shouldFlipPedalPolarity = false
+    if (e.data[1] === 64 || e.data[1] === 66 || e.data[1] === 67) {
+      this.output.sendControlChange(
+        e.data[1],
+        shouldFlipPedalPolarity ? 127 - e.value : e.value,
+        1
+      )
+    }
   }
 
   public processNoteOnOrOff(e: InputEventNoteon | InputEventNoteoff) {

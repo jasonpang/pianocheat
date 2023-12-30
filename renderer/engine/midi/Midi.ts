@@ -32,7 +32,8 @@ export default class Midi {
       (x) =>
         x.name.toLowerCase().includes('roland') ||
         x.name.toLowerCase().includes('mpk mini') ||
-        x.name.toLowerCase().includes('usb-midi')
+        x.name.toLowerCase().includes('usb-midi') ||
+        x.name.toLowerCase().includes('E-MU XMidi1X1 Tab In'.toLowerCase())
     )
     const input = digitalPianoInput
 
