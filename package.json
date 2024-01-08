@@ -1,0 +1,16 @@
+{
+  "name": "electron-nextjs-typescript-monorepo",
+  "private": true,
+  "engines": {
+    "node": "20",
+    "pnpm": ">=8.14"
+  },
+  "packageManager": "pnpm@8.14.0",
+  "scripts": {
+    "dev": "pnpm --parallel --stream -r run dev",
+    "build": "pnpm --stream -r run build",
+    "start": "pnpm --stream -r start",
+    "clean": "pnpm -r run clean"
+  },
+  "license": "MIT"
+}

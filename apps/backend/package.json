@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "main": "build/main.js",
+  "scripts": {
+    "dev": "tsc --watch",
+    "start": "electron ./build/main.js 3000",
+    "test": "node --test --watch",
+    "clean": "rm -rf ./build; rm -rf ./node_modules"
+  },
+  "dependencies": {
+    "electron-log": "^5.0.3",
+    "electron-serve": "^1.2.0",
+    "electron-store": "^8.1.0",
+    "models": "workspace:*",
+    "mutative": "^1.0.2",
+    "tsconfig": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.7",
+    "electron": "^28.1.1",
+    "typescript": "^5.3.3"
+  }
+}
