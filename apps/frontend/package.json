@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "frontend": "next dev",
-    "build": "next build",
+    "frontend:build": "next build",
     "start:site": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next/; rm -rf ./build; rm -rf ./node_modules"
