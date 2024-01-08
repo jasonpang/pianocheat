@@ -1,9 +1,9 @@
 {
-  "name": "@pianocheat/backend",
+  "name": "@pianocheat/electron",
   "main": "build/main.js",
   "scripts": {
     "dev": "tsc --watch",
-    "backend": "electron ./build/main.js 3000",
+    "electron": "electron ./build/main.js 3000",
     "test": "node --test --watch",
     "clean": "rm -rf ./build; rm -rf ./node_modules"
   },

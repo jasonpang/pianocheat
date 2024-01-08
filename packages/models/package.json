@@ -1,5 +1,5 @@
 {
-  "name": "models",
+  "name": "@pianocheat/models",
   "version": "1.0.0",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -9,7 +9,7 @@
     "clean": "rm -rf ./build; rm -rf ./node_modules"
   },
   "dependencies": {
-    "tsconfig": "workspace:*"
+    "@pianocheat/tsconfig": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",

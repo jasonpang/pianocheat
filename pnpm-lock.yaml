@@ -10,6 +10,15 @@ importers:
 
   apps/backend:
     dependencies:
+      '@pianocheat/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@pianocheat/models':
+        specifier: workspace:*
+        version: link:../../packages/models
+      '@pianocheat/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
       electron-log:
         specifier: ^5.0.3
         version: 5.0.3
@@ -19,15 +28,9 @@ importers:
       electron-store:
         specifier: ^8.1.0
         version: 8.1.0
-      models:
-        specifier: workspace:*
-        version: link:../../packages/models
       mutative:
         specifier: ^1.0.2
         version: 1.0.2
-      tsconfig:
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
     devDependencies:
       '@types/node':
         specifier: ^20.10.7
@@ -41,6 +44,12 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@pianocheat/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@pianocheat/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 14.0.4
         version: 14.0.4(react-dom@18.2.0)(react@18.2.0)
@@ -50,12 +59,6 @@ importers:
       react-dom:
         specifier: ^18
         version: 18.2.0(react@18.2.0)
-      tsconfig:
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
-      ui:
-        specifier: workspace:*
-        version: link:../../packages/ui
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -76,9 +79,9 @@ importers:
         specifier: ^5
         version: 5.3.3
 
-  packages/engine:
+  packages/constants:
     dependencies:
-      tsconfig:
+      '@pianocheat/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
     devDependencies:
@@ -89,9 +92,72 @@ importers:
         specifier: ^5.3.3
         version: 5.3.3
 
+  packages/engine:
+    dependencies:
+      '@pianocheat/models':
+        specifier: workspace:*
+        version: link:../models
+      '@pianocheat/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      webmidi:
+        specifier: ^3.1.8
+        version: 3.1.8
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.7
+        version: 20.10.7
+      electron:
+        specifier: ^28.1.1
+        version: 28.1.1
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+
+  packages/messaging/client:
+    dependencies:
+      '@pianocheat/constants':
+        specifier: workspace:*
+        version: link:../../constants
+      '@pianocheat/tsconfig':
+        specifier: workspace:*
+        version: link:../../tsconfig
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.7
+        version: 20.10.7
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+
+  packages/messaging/server:
+    dependencies:
+      '@pianocheat/constants':
+        specifier: workspace:*
+        version: link:../../constants
+      '@pianocheat/tsconfig':
+        specifier: workspace:*
+        version: link:../../tsconfig
+      bufferutil:
+        specifier: ^4.0.8
+        version: 4.0.8
+      ws:
+        specifier: ^8.16.0
+        version: 8.16.0(bufferutil@4.0.8)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.7
+        version: 20.10.7
+      '@types/ws':
+        specifier: ^8.5.10
+        version: 8.5.10
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+
   packages/models:
     dependencies:
-      tsconfig:
+      '@pianocheat/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
     devDependencies:
@@ -106,7 +172,7 @@ importers:
 
   packages/ui:
     dependencies:
-      tsconfig:
+      '@pianocheat/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
     devDependencies:
@@ -138,7 +204,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.14.1
-    dev: true
 
   /@electron/get@2.0.3:
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
@@ -409,6 +474,18 @@ packages:
 
   /@types/scheduler@0.16.8:
     resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
+    dev: true
+
+  /@types/webmidi@2.0.10:
+    resolution: {integrity: sha512-4RmTFMB6mN2h8XbJa1x3cOs9IOkXvFyHGcPUpUvWfmATuKg/J+dsFiMVgCE2EkpS+/8a8AP2tE3rQT1mLG7vEg==}
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@types/ws@8.5.10:
+    resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
+    dependencies:
+      '@types/node': 20.10.7
     dev: true
 
   /@types/yauzl@2.10.3:
@@ -694,6 +771,14 @@ packages:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
     dev: true
 
+  /bufferutil@4.0.8:
+    resolution: {integrity: sha512-4T53u4PdgsXqKaIctwF8ifXlRTTmEPJ8iEPWFdGZvcf7sbwYo6FKFEX9eNNAnzFZ7EzJAQ3CJeOtCRA4rDp7Pw==}
+    engines: {node: '>=6.14.2'}
+    requiresBuild: true
+    dependencies:
+      node-gyp-build: 4.8.0
+    dev: false
+
   /busboy@1.6.0:
     resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
     engines: {node: '>=10.16.0'}
@@ -883,6 +968,12 @@ packages:
     dependencies:
       path-type: 4.0.0
     dev: true
+
+  /djipevents@2.0.7:
+    resolution: {integrity: sha512-KNFYaU85imxOCKOUsIR70Iz9E19r96/X7LSH+u0tSoZdpWcBdzoqtTsU+wuLhc6GMpSFob+KInkZAbfKi01Bjg==}
+    dependencies:
+      '@babel/runtime': 7.23.7
+    dev: false
 
   /doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
@@ -1864,6 +1955,13 @@ packages:
       set-function-name: 2.0.1
     dev: true
 
+  /jazz-midi@1.7.9:
+    resolution: {integrity: sha512-c8c4BBgwxdsIr1iVm53nadCrtH7BUlnX3V95ciK/gbvXN/ndE5+POskBalXgqlc/r9p2XUbdLTrgrC6fou5p9w==}
+    engines: {node: '>=10.0.0'}
+    requiresBuild: true
+    dev: false
+    optional: true
+
   /js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -1922,6 +2020,15 @@ packages:
       object.assign: 4.1.5
       object.values: 1.1.7
     dev: true
+
+  /jzz@1.7.7:
+    resolution: {integrity: sha512-fh7Qxb7G4q+7XqmayINHtGj2WpXtQTm+crFK0kg/s7JDhXLKg97MV0MXpADWNFJrNNVb9mkwNzW9sQlkRlfyug==}
+    requiresBuild: true
+    dependencies:
+      '@types/webmidi': 2.0.10
+      jazz-midi: 1.7.9
+    dev: false
+    optional: true
 
   /keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -2104,6 +2211,11 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+    dev: false
+
+  /node-gyp-build@4.8.0:
+    resolution: {integrity: sha512-u6fs2AEUljNho3EYTJNBfImO5QTo/J/1Etd+NVdCj7qWKUSN/bSLkZwhDv7I+w/MSC6qJ4cknepkAYykDdK8og==}
+    hasBin: true
     dev: false
 
   /normalize-url@6.1.0:
@@ -2377,7 +2489,6 @@ packages:
 
   /regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
-    dev: true
 
   /regexp.prototype.flags@1.5.1:
     resolution: {integrity: sha512-sy6TXMN+hnP/wMy+ISxg3krXx7BAtWVO4UouuCN/ziM9UEne0euamVNafDfvC83bRNr95y0V5iijeDQFUNpvrg==}
@@ -2803,6 +2914,15 @@ packages:
       graceful-fs: 4.2.11
     dev: false
 
+  /webmidi@3.1.8:
+    resolution: {integrity: sha512-PCRic1iTpKxeheb888G0mDe6MBdz/u+s/xfdV6+1ZhZnS6dKtV9gMBth5cpmMip2Livv5lL+ep4/S9DCzHfumg==}
+    engines: {node: '>=8.5'}
+    dependencies:
+      djipevents: 2.0.7
+    optionalDependencies:
+      jzz: 1.7.7
+    dev: false
+
   /which-boxed-primitive@1.0.2:
     resolution: {integrity: sha512-bwZdv0AKLpplFY2KZRX6TvyuN7ojjr7lwkg6ml0roIy9YeuSr7JS372qlNW18UQYzgYK9ziGcerWqZOmEn9VNg==}
     dependencies:
@@ -2862,6 +2982,21 @@ packages:
   /wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
     dev: true
+
+  /ws@8.16.0(bufferutil@4.0.8):
+    resolution: {integrity: sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+    dependencies:
+      bufferutil: 4.0.8
+    dev: false
 
   /yallist@4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}

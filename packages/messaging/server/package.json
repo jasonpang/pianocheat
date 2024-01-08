@@ -1,5 +1,5 @@
 {
-  "name": "@pianocheat/ui",
+  "name": "@pianocheat/messaging.server",
   "version": "1.0.0",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -9,18 +9,14 @@
     "clean": "rm -rf ./build; rm -rf ./node_modules"
   },
   "dependencies": {
-    "@pianocheat/tsconfig": "workspace:*"
+    "bufferutil": "^4.0.8",
+    "@pianocheat/constants": "workspace:*",
+    "@pianocheat/tsconfig": "workspace:*",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",
-    "@types/react": "^18.2.47",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@types/ws": "^8.5.10",
     "typescript": "^5.3.3"
-  },
-  "peerDependencies": {
-    "@types/react": "^18.2.47",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
   }
 }

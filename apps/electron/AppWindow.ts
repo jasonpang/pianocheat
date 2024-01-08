@@ -86,7 +86,7 @@ const createWindow = (
     ...state,
     useContentSize: false,
     center: true,
-    title: "Electron App",
+    title: "PianoCheat",
     icon: "./resources/icon.png",
     autoHideMenuBar: true,
     backgroundColor: "#fff",
@@ -94,7 +94,6 @@ const createWindow = (
     darkTheme: true,
     webPreferences: {
       ...options.webPreferences,
-      preload: path.join(__dirname, "../preload.js"),
       devTools: !isProd,
       // https://github.com/vercel/next.js/issues/45277
       nodeIntegration: false,

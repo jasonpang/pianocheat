@@ -1,9 +1,9 @@
 {
-  "name": "frontend",
+  "name": "@pianocheat/frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "frontend": "next dev",
     "build": "next build",
     "start:site": "next start",
     "lint": "next lint",
@@ -13,8 +13,8 @@
     "react": "^18",
     "react-dom": "^18",
     "next": "14.0.4",
-    "ui": "workspace:*",
-    "tsconfig": "workspace:*"
+    "@pianocheat/ui": "workspace:*",
+    "@pianocheat/tsconfig": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5",
