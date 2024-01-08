@@ -1,1 +1,1 @@
-export * from "./MessageClient";
+export { MessageClient } from "./MessageClient";

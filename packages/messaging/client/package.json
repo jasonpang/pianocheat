@@ -9,8 +9,10 @@
     "clean": "rm -rf ./build; rm -rf ./node_modules"
   },
   "dependencies": {
+    "@pianocheat/constants": "workspace:*",
     "@pianocheat/tsconfig": "workspace:*",
-    "@pianocheat/constants": "workspace:*"
+    "@types/uuid": "^9.0.7",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",

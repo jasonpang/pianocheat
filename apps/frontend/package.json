@@ -14,7 +14,8 @@
     "react-dom": "^18",
     "next": "14.0.4",
     "@pianocheat/ui": "workspace:*",
-    "@pianocheat/tsconfig": "workspace:*"
+    "@pianocheat/tsconfig": "workspace:*",
+    "@pianocheat/messaging.client": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5",

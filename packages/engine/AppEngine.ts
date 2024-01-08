@@ -16,7 +16,7 @@ export class AppEngine {
       throw new Error(e?.toString() || "Unknown error");
     }
 
-    this.enumerateMidiDevices();
+    // this.enumerateMidiDevices();
     // const score = createFromMusicXmlDocument(
     //   "resources/03 - David Hicken - A Day With Youd.musicxml"
     // );

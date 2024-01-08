@@ -1,77 +1,77 @@
-import electron, { BrowserWindow, app, net, protocol } from "electron";
-import log from "electron-log";
-import serve from "electron-serve";
-import createWindow from "./AppWindow";
-import { AppContext } from "@pianocheat/engine";
+// import electron, { BrowserWindow, app, net, protocol } from "electron";
+// import log from "electron-log";
+// import serve from "electron-serve";
+// import createWindow from "./AppWindow";
+// import { AppContext } from "@pianocheat/engine";
 
-const isProd: boolean = process.env.NODE_ENV === "production";
+// const isProd: boolean = process.env.NODE_ENV === "production";
 
-async function initializeAppContext(window: BrowserWindow) {
-  const appContext = new AppContext(window);
-  await appContext.initialize();
-}
+// async function initializeAppContext(window: BrowserWindow) {
+//   const appContext = new AppContext(window);
+//   await appContext.initialize();
+// }
 
-async function initializeAppWindow() {
-  const mainWindow = createWindow("main", {
-    width: 1200,
-    height: 800,
-  });
-  mainWindow.maximize();
+// async function initializeAppWindow() {
+//   const mainWindow = createWindow("main", {
+//     width: 1200,
+//     height: 800,
+//   });
+//   mainWindow.maximize();
 
-  initializeAppContext(mainWindow);
+//   initializeAppContext(mainWindow);
 
-  if (isProd) {
-    await mainWindow.loadURL(`app://./home.html`);
-  } else {
-    const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/home`);
-  }
+//   if (isProd) {
+//     await mainWindow.loadURL(`app://./home.html`);
+//   } else {
+//     const port = process.argv[2];
+//     await mainWindow.loadURL(`http://localhost:${port}/home`);
+//   }
 
-  return mainWindow;
-}
+//   return mainWindow;
+// }
 
-async function onAppReady() {
-  log.info("Starting app");
+// async function onAppReady() {
+//   log.info("Starting app");
 
-  const image = electron.nativeImage.createFromPath(
-    app.getAppPath() + "/resources/icon.png"
-  );
-  app.dock.setIcon(image);
+//   const image = electron.nativeImage.createFromPath(
+//     app.getAppPath() + "/resources/icon.png"
+//   );
+//   app.dock.setIcon(image);
 
-  protocol.handle("file", (request) =>
-    net.fetch(request.url.replace("file:///", ""))
-  );
+//   protocol.handle("file", (request) =>
+//     net.fetch(request.url.replace("file:///", ""))
+//   );
 
-  await initializeAppWindow();
-}
+//   await initializeAppWindow();
+// }
 
-function main() {
-  process.on("uncaughtException", function (error) {
-    log.error(error);
-    app.exit(1);
-  });
+// function main() {
+//   process.on("uncaughtException", function (error) {
+//     log.error(error);
+//     app.exit(1);
+//   });
 
-  if (isProd) {
-    serve({ directory: "app" });
-  } else {
-    app.setPath("userData", `${app.getPath("userData")} (development)`);
-  }
+//   if (isProd) {
+//     serve({ directory: "app" });
+//   } else {
+//     app.setPath("userData", `${app.getPath("userData")} (development)`);
+//   }
 
-  // Set app id on windows
-  if (process.platform === "win32") {
-    app.setAppUserModelId(app.name);
-  }
+//   // Set app id on windows
+//   if (process.platform === "win32") {
+//     app.setAppUserModelId(app.name);
+//   }
 
-  // This is used to mantain single open window.
-  if (app.requestSingleInstanceLock()) {
-    app.on("ready", onAppReady);
-  } else {
-    app.quit();
-  }
+//   // This is used to mantain single open window.
+//   if (app.requestSingleInstanceLock()) {
+//     app.on("ready", onAppReady);
+//   } else {
+//     app.quit();
+//   }
 
-  app.on("window-all-closed", () => {
-    app.quit();
-  });
-}
+//   app.on("window-all-closed", () => {
+//     app.quit();
+//   });
+// }
 
-main();
+// main();

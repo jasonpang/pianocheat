@@ -1,0 +1,24 @@
+{
+  "files.exclude": {
+    "**/node_modules/": true,
+    "**/build/": true,
+    "**/.DS_Store": true,
+    "apps/frontend/node_modules": true,
+    "apps/frontend/.pnp": true,
+    "apps/frontend/**/.pnp.js": true,
+    "apps/frontend/.yarn/install-state.gz": true,
+    "apps/frontend/coverage": true,
+    "apps/frontend/.next/": true,
+    "apps/frontend/out/": true,
+    "apps/frontend/build": true,
+    "apps/frontend/**/.DS_Store": true,
+    "apps/frontend/**/*.pem": true,
+    "apps/frontend/**/npm-debug.log*": true,
+    "apps/frontend/**/yarn-debug.log*": true,
+    "apps/frontend/**/yarn-error.log*": true,
+    "apps/frontend/**/.env*.local": true,
+    "apps/frontend/**/.vercel": true,
+    "apps/frontend/**/*.tsbuildinfo": true,
+    "apps/frontend/**/next-env.d.ts": true
+  }
+}

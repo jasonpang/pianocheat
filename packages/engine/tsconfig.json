@@ -3,5 +3,6 @@
   "extends": "@pianocheat/tsconfig/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./build"
-  }
+  },
+  "exclude": ["node_modules", "./build/**/*"]
 }
