@@ -1,8 +1,7 @@
 {
-  "name": "@pianocheat/messaging.client",
+  "name": "@pianocheat/messaging.shared",
   "version": "1.0.0",
   "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "dev": "tsc --watch",
     "test": "node --test --watch",
@@ -10,10 +9,7 @@
   },
   "dependencies": {
     "@pianocheat/constants": "workspace:*",
-    "@pianocheat/tsconfig": "workspace:*",
-    "@pianocheat/messaging.shared": "workspace:*",
-    "@types/uuid": "^9.0.7",
-    "uuid": "^9.0.1"
+    "@pianocheat/tsconfig": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",

@@ -4,6 +4,7 @@ import { AppEngine } from "./AppEngine";
 const DEBUG_FRONTEND_STATE_CHANGES = false;
 
 export class AppContext {
+  messageServer: MessageServer;
   store: ReturnType<any>;
   engine: AppEngine;
 
@@ -20,11 +21,7 @@ export class AppContext {
     //     },
     //   },
     // });
-    this.engine = new AppEngine(this);
-  }
-
-  async initialize() {
-    const server = new MessageServer(
+    this.messageServer = new MessageServer(
       (id: string, payload: any, resolve: (value: unknown) => void) => {
         console.log("On Request Message:", id, payload);
         if (payload === "test") {
@@ -35,7 +32,11 @@ export class AppContext {
         console.log("On Event:", id, payload);
       }
     );
-    server.initialize();
+    this.engine = new AppEngine(this);
+  }
+
+  async initialize() {
+    this.messageServer.initialize();
     // this.store.subscribe((state, change) => {
     //   if (DEBUG_FRONTEND_STATE_CHANGES) {
     //     console.log(

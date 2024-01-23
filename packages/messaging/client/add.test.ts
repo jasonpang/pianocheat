@@ -1,6 +1,11 @@
 import test from "node:test";
 import * as assert from "node:assert/strict";
+import { MessageServer } from "@pianocheat/messaging.server";
+
+enum Events {
+  EventA = "event-a",
+}
 
 test("add", (t) => {
-  assert.deepEqual(1 + 1, 2);
+  const server = new MessageServer<Events>();
 });

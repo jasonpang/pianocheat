@@ -1,18 +1,29 @@
 import { WEBSOCKET_PORT } from "@pianocheat/constants";
-import { ExtendedWebSocket, WebSocketServer } from "ws";
+import { Data, ExtendedWebSocket, WebSocketServer } from "ws";
 import { v4 as uuidv4 } from "uuid";
 import { JSONValue } from "./types";
+import {
+  HEARTBEAT_INTERVAL,
+  InternalMessage,
+  InternalMessageOpcode,
+  JSONLike,
+} from "@pianocheat/messaging.shared";
 
 const PING_INTERVAL_MS = 2000;
 const AUTO_RECONNECT_DELAY_MS = 500;
 
-export class MessageServer {
+export class MessageServer<TEvents extends string> {
   private SOCKET_ID: number = 1;
   private server: WebSocketServer;
+  private requestHandlers: Map<
+    string,
+    (data: InternalMessage, resolve: (value: any) => void) => Promise<any>
+  > = new Map();
   private promiseCallbacks: Map<
     string,
-    { resolve: (value: unknown) => void; reject: (reason?: any) => void }
+    { resolve: (value: any) => void; reject: (reason?: any) => void }
   > = new Map();
+  private clientDelayedDisconnectMap: Map<number, NodeJS.Timeout> = new Map();
   private onRequestMessage: (
     id: string,
     payload: JSONValue,
@@ -21,101 +32,141 @@ export class MessageServer {
   private onEvent: (id: string, payload: JSONValue) => void;
   private autoDisconnectTimeout: NodeJS.Timeout | null = null;
 
-  constructor(
-    onRequestMessage: (
-      id: string,
-      payload: JSONValue,
-      resolve: (value: unknown) => void
-    ) => void,
-    onEvent: (id: string, payload: JSONValue) => void
-  ) {
-    this.server = new WebSocketServer({ port: WEBSOCKET_PORT });
-
-    this.onRequestMessage = onRequestMessage;
-    this.onEvent = onEvent;
+  constructor() {
+    this.server = new WebSocketServer({
+      port: WEBSOCKET_PORT,
+    });
+    this.server.on("connection", this.onSocketConnected.bind(this));
   }
 
-  private async onMessage({
-    id,
-    socket,
-    kind,
-    payload,
-  }: {
-    id: string;
-    socket;
-    kind: string;
-    payload: JSONValue;
-  }) {
-    switch (kind) {
-      case "ping":
-        this.send(
-          socket,
-          JSON.stringify({
-            kind: "pong",
-          })
+  private async onSocketInternalMessage(
+    socket: ExtendedWebSocket,
+    _data: Data
+  ) {
+    const data = JSON.parse(_data.toString()) as InternalMessage;
+
+    switch (data.opcode) {
+      case InternalMessageOpcode.Heartbeat:
+        clearTimeout(this.clientDelayedDisconnectMap.get(socket.id));
+        this.clientDelayedDisconnectMap.set(
+          socket.id,
+          setTimeout(() => {
+            socket.close();
+          }, HEARTBEAT_INTERVAL * 2.1)
         );
         break;
-      case "pong":
-        if (this.autoDisconnectTimeout) {
-          clearTimeout(this.autoDisconnectTimeout);
-        }
-        this.autoDisconnectTimeout = setTimeout(() => {
-          socket?.close();
-        }, PING_INTERVAL_MS * 2.1);
-        setTimeout(() => {
-          this.send(
-            socket,
-            JSON.stringify({
-              kind: "ping",
-            })
-          );
-        }, PING_INTERVAL_MS);
-        break;
-      case "request":
-        if (typeof this.onRequestMessage === "function") {
-          console.log(`[Message Request Received]`, { id, payload });
-          const response = new Promise((resolve) => {
-            this.onRequestMessage(id, payload, resolve);
+      case InternalMessageOpcode.Request:
+        const requestHandler = this.requestHandlers.get(data.requestId);
+        if (!requestHandler) {
+          this.internalSend(socket, {
+            opcode: InternalMessageOpcode.Reply,
+            requestId: data.requestId,
+            payload: new Error(
+              `A request type message with ID ${data.requestId} was received, but no corresponding request handler was registered.`
+            ),
           });
-          this.send(
-            socket,
-            JSON.stringify({
-              id,
-              kind: "response",
-              payload: await response,
-            })
+          console.log(
+            `A request type message with ID ${data.requestId} was received, but no corresponding request handler was registered.`
           );
+          return;
+        }
+
+        const response = await new Promise((resolve) => {
+          requestHandler(data, resolve);
+        });
+        this.internalSend(socket, {
+          opcode: InternalMessageOpcode.Reply,
+          requestId: data.requestId,
+          payload: response as JSONLike,
+        });
+        break;
+      case InternalMessageOpcode.Reply:
+        console.log(`[Message Response Received]`, data);
+        const promise = this.promiseCallbacks.get(data.requestId);
+        if (!promise) {
+          console.warn(
+            `A response type message with ID ${data.requestId} was received, but no corresponding request message was stored/sent.`
+          );
+          return;
+        }
+
+        if (data.payload instanceof Error) {
+          promise.reject(data.payload);
+        } else {
+          promise.resolve(data.payload);
         }
         break;
-      case "response":
-        console.log(`[Message Response Received]`, { id, payload });
-        this.onResponseMessage(id, payload);
-        break;
-      case "event":
+      case InternalMessageOpcode.Event:
         if (typeof this.onEvent === "function") {
           console.log(`[Message Event Received]`, { id, payload });
           this.onEvent(id, payload);
         }
         break;
-      default:
-        console.error(`Unknown message kind: ${{ id, socket, kind, payload }}`);
     }
   }
 
-  private onResponseMessage(id: string, payload: JSONValue) {
-    const promise = this.promiseCallbacks.get(id);
-    if (!promise) {
-      console.warn(
-        `A response type message with ID ${id} was received, but no corresponding request message was stored/sent.`
-      );
+  private onSocketError(socket: ExtendedWebSocket, error: Error) {
+    console.error(`[Socket Error]`, error);
+    socket.close();
+  }
+
+  private onSocketConnected(socket: ExtendedWebSocket) {
+    socket.id = this.SOCKET_ID++;
+    socket.isAlive = true;
+
+    socket.onmessage = (event) =>
+      this.onSocketInternalMessage(socket, event.data);
+
+    socket.on("error", (e) => this.onSocketError(socket, e));
+
+    this.beginSocketHeartbeat(socket);
+  }
+
+  private beginSocketHeartbeat(socket: ExtendedWebSocket) {
+    socket.on("pong", () => {
+      socket.isAlive = true;
+    });
+
+    socket.on("close", () => {
+      console.log(`[Socket Closed]`, socket.id);
+      socket.isAlive = false;
+    });
+
+    this.send(
+      socket,
+      JSON.stringify({
+        kind: "ping",
+      })
+    );
+
+    setTimeout(() => {
+      if (socket.isAlive) {
+        this.beginSocketHeartbeat(socket);
+      } else {
+        socket.terminate();
+      }
+    }, PING_INTERVAL_MS);
+  }
+
+  private internalSend(socket: ExtendedWebSocket, message: InternalMessage) {
+    if (!socket || socket.readyState !== socket.OPEN) {
       return;
     }
 
-    if (payload instanceof Error) {
-      promise.reject(payload);
-    } else {
-      promise.resolve(payload);
+    socket.send(JSON.stringify(message));
+  }
+
+  private internalBroadcast(message: InternalMessage) {
+    for (const client of this.server.clients) {
+      client.send(JSON.stringify(message));
     }
+  }
+
+  public registerRequestHandler<T>(
+    requestId: string,
+    handler: (params: any) => Promise<T>
+  ) {
+    this.requestHandlers.set(requestId, handler);
   }
 
   broadcastEvent(payload: JSONValue) {
@@ -131,43 +182,5 @@ export class MessageServer {
         })
       );
     }
-  }
-
-  send(socket: ExtendedWebSocket, data: any) {
-    if (!socket) {
-      return;
-    }
-
-    socket.send(data);
-  }
-
-  onSocketConnected(socket: ExtendedWebSocket) {
-    socket.id = this.SOCKET_ID++;
-    socket.isAlive = true;
-
-    socket.onmessage = (message) => {
-      if (typeof this.onMessage === "function") {
-        this.onMessage({
-          ...JSON.parse(message.data.toString()),
-          socket,
-        });
-      } else {
-        console.warn("[MessageServer] this.onmessage is not a function?!");
-      }
-    };
-    socket.on("error", (e) => {
-      console.error(`[Socket Error]`, e);
-    });
-
-    this.send(
-      socket,
-      JSON.stringify({
-        kind: "ping",
-      })
-    );
-  }
-
-  initialize() {
-    this.server.on("connection", this.onSocketConnected.bind(this));
   }
 }
