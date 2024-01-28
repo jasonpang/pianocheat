@@ -1,212 +1,183 @@
 import { WEBSOCKET_PORT } from "@pianocheat/constants";
 import { v4 as uuidv4 } from "uuid";
 import { JSONValue } from "./types";
-
-const PING_INTERVAL_MS = 2000;
-const AUTO_RECONNECT_DELAY_MS = 3000;
+import {
+  HEARTBEAT_INTERVAL,
+  InternalMessage,
+  InternalMessageOpcode,
+  JSONLike,
+  WEBSOCKET_DEFAULT_PORT,
+} from "@pianocheat/messaging.shared";
 
 export class MessageClient {
-  private socket: WebSocket | null = null;
+  private SOCKET_ID: number = 1;
+  private client: WebSocket;
+  private eventHandlers: Map<
+    string,
+    (
+      params: Omit<
+        Extract<InternalMessage, { opcode: InternalMessageOpcode.Event }>,
+        "opcode"
+      >
+    ) => Promise<any>
+  > = new Map();
+  private requestHandlers: Map<
+    string,
+    (data: InternalMessage, resolve: (value: any) => void) => Promise<any>
+  > = new Map();
   private promiseCallbacks: Map<
     string,
-    { resolve: (value: unknown) => void; reject: (reason?: any) => void }
+    { resolve: (value: any) => void; reject: (reason?: any) => void }
   > = new Map();
-  private onRequestMessage: (
-    id: string,
-    payload: JSONValue,
-    resolve: (value: unknown) => void
-  ) => void;
-  private onEvent: (id: string, payload: JSONValue) => void;
-  private onConnected: (client: MessageClient) => void;
-  private autoDisconnectTimeout: NodeJS.Timeout | null = null;
-  private SOCKET_ID = uuidv4().slice(0, 5);
-  private isTerminated = false;
+  private isAlive: boolean;
+  private serverDelayedDisconnect: NodeJS.Timeout;
 
-  constructor({
-    onConnected,
-    onRequestMessage,
-    onEvent,
-  }: {
-    onConnected: (client: MessageClient) => void;
-    onRequestMessage: (id: string, payload: JSONValue) => void;
-    onEvent: (id: string, payload: JSONValue) => void;
-  }) {
-    this.onConnected = onConnected;
-    this.onRequestMessage = onRequestMessage;
-    this.onEvent = onEvent;
-  }
-
-  async sendRequest(payload: JSONValue) {
-    if (!this.socket) {
-      return null;
-    }
-
-    const id = uuidv4();
-
-    const promise = new Promise((resolve, reject) => {
-      this.promiseCallbacks.set(id, { resolve, reject });
-    });
-    this.send(
-      JSON.stringify({
-        id,
-        kind: "request",
-        payload,
-      })
+  constructor() {
+    this.client = new WebSocket(
+      `ws://127.0.0.1:${WEBSOCKET_DEFAULT_PORT}`,
+      "pianocheat.protocol.v1"
     );
-    return await promise;
+    this.client.onopen = () => this.onSocketConnected(this.client);
   }
 
-  private async onMessage(data: unknown) {
-    const { id, kind, payload } = data as {
-      id: string;
-      kind: string;
-      payload: JSONValue;
-    };
+  private async onSocketInternalMessage(socket: WebSocket, _data: Data) {
+    const data = JSON.parse(_data.toString()) as InternalMessage;
 
-    switch (kind) {
-      case "ping":
-        this.send(
-          JSON.stringify({
-            kind: "pong",
-          })
-        );
+    switch (data.opcode) {
+      case InternalMessageOpcode.Heartbeat:
+        clearTimeout(this.serverDelayedDisconnect);
+        this.serverDelayedDisconnect = setTimeout(() => {
+          socket.close();
+        }, HEARTBEAT_INTERVAL * 2.1);
         break;
-      case "pong":
-        if (this.autoDisconnectTimeout) {
-          clearTimeout(this.autoDisconnectTimeout);
-        }
-        this.autoDisconnectTimeout = setTimeout(() => {
-          this.socket?.close();
-        }, PING_INTERVAL_MS * 2.1);
-        setTimeout(() => {
-          this.send(
-            JSON.stringify({
-              kind: "ping",
-            })
-          );
-        }, PING_INTERVAL_MS);
-        break;
-      case "request":
-        if (typeof this.onRequestMessage === "function") {
-          const response = new Promise((resolve) => {
-            this.onRequestMessage(id, payload, resolve);
+      case InternalMessageOpcode.Request:
+        const requestHandler = this.requestHandlers.get(data.requestId);
+        if (!requestHandler) {
+          this.internalSend(socket, {
+            opcode: InternalMessageOpcode.Reply,
+            requestId: data.requestId,
+            payload: new Error(
+              `A request type message with ID ${data.requestId} was received, but no corresponding request handler was registered.`
+            ),
           });
-          this.send(
-            JSON.stringify({
-              id,
-              kind: "response",
-              payload: await response,
-            })
+          console.log(
+            `A request type message with ID ${data.requestId} was received, but no corresponding request handler was registered.`
           );
+          return;
+        }
+
+        const response = await new Promise((resolve) => {
+          requestHandler(data, resolve);
+        });
+        this.internalSend(socket, {
+          opcode: InternalMessageOpcode.Reply,
+          requestId: data.requestId,
+          payload: response as JSONLike,
+        });
+        break;
+      case InternalMessageOpcode.Reply:
+        console.log(`[Message Response Received]`, data);
+        const promise = this.promiseCallbacks.get(data.requestId);
+        if (!promise) {
+          console.warn(
+            `A response type message with ID ${data.requestId} was received, but no corresponding request message was stored/sent.`
+          );
+          return;
+        }
+
+        if (data.payload instanceof Error) {
+          promise.reject(data.payload);
+        } else {
+          promise.resolve(data.payload);
         }
         break;
-      case "response":
-        this.onResponseMessage(id, payload);
-        break;
-      case "event":
-        if (typeof this.onEvent === "function") {
-          this.onEvent(id, payload);
+      case InternalMessageOpcode.Event:
+        const eventHandler = this.eventHandlers.get(data.eventName);
+        if (!eventHandler) {
+          console.log(
+            `An event type message with name ${data.eventName} was received, but no corresponding event handler was registered.`
+          );
+          return;
+        } else {
+          eventHandler(data);
         }
         break;
-      default:
-        console.error(`Unknown message kind:`, { id, kind, payload });
     }
   }
 
-  private onResponseMessage(id: string, payload: JSONValue) {
-    const promise = this.promiseCallbacks.get(id);
-    if (!promise) {
-      console.warn(
-        `A response type message with ID ${id} was received, but no corresponding request message was stored/sent.`
-      );
-      return;
-    }
-
-    if (payload instanceof Error) {
-      promise.reject(payload);
-    } else {
-      promise.resolve(payload);
-    }
+  private onSocketError(socket: WebSocket, error: Error) {
+    console.error(`[Socket Error]`, error);
+    socket.close();
   }
 
-  sendEvent(payload: JSONValue) {
-    if (!this.socket) {
-      return null;
-    }
+  private onSocketConnected(socket: WebSocket) {
+    this.isAlive = true;
+    socket.onmessage = (event) =>
+      this.onSocketInternalMessage(socket, event.data);
 
-    const id = uuidv4();
+    socket.onerror = (e) => this.onSocketError(socket, e);
 
-    this.send(
-      JSON.stringify({
-        id,
-        kind: "event",
-        payload,
-      })
-    );
-  }
-
-  private _onConnected() {
-    this.onConnected(this);
-    this.send(
-      JSON.stringify({
-        kind: "ping",
-      })
-    );
-  }
-
-  private send(data: string | ArrayBufferLike | Blob | ArrayBufferView) {
-    if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket?.send(data);
-    }
-  }
-
-  disconnect() {
-    this.isTerminated = true;
-    if (this.socket) {
-      try {
-        if (this.socket.readyState === WebSocket.OPEN) {
-          this.socket.close();
-        }
-      } catch (ex) {}
-      this.socket = null;
-    }
-  }
-
-  connect() {
-    if (this.isTerminated) {
-      return;
-    }
-
-    this.socket = new WebSocket(`ws://127.0.0.1:${WEBSOCKET_PORT}`);
-
-    this.socket.onerror = () => {
-      if (this.isTerminated) {
-        return;
-      }
-
-      console.log(`[${this.SOCKET_ID}] [Socket Error]`);
-      setTimeout(this.connect.bind(this), AUTO_RECONNECT_DELAY_MS);
-      return;
-    };
-
-    this.socket.addEventListener("open", this._onConnected.bind(this));
-
-    this.socket.addEventListener("close", () => {
-      if (this.isTerminated) {
-        return;
-      }
-
-      setTimeout(this.connect.bind(this), AUTO_RECONNECT_DELAY_MS);
+    socket.onclose = () => {
+      socket.isAlive = false;
     });
 
-    this.socket.addEventListener("message", (event) => {
-      if (this.isTerminated) {
-        return;
-      }
+    this.beginSocketHeartbeat(socket);
+  }
 
-      if (typeof this?.onMessage === "function") {
-        this.onMessage(JSON.parse(event.data));
+  private beginSocketHeartbeat(socket: WebSocket) {
+    socket.addEventListener('message'' ", () => {
+      socket.isAlive = true;
+    });
+
+    socket.on("close", () => {
+      console.log(`[Socket Closed]`, socket.id);
+      socket.isAlive = false;
+    });
+
+    this.internalSend(socket, {
+      opcode: InternalMessageOpcode.Heartbeat,
+    });
+
+    setTimeout(() => {
+      if (socket.isAlive) {
+        this.beginSocketHeartbeat(socket);
+      } else {
+        socket.terminate();
       }
+    }, HEARTBEAT_INTERVAL);
+  }
+
+  private internalSend(socket: WebSocket, message: InternalMessage) {
+    if (!socket || socket.readyState !== socket.OPEN) {
+      return;
+    }
+
+    socket.send(JSON.stringify(message));
+  }
+
+  private internalBroadcast(message: InternalMessage) {
+    for (const client of this.client.clients) {
+      client.send(JSON.stringify(message));
+    }
+  }
+
+  public onEvent<T>(requestId: string, handler: (params: any) => Promise<T>) {
+    this.eventHandlers.set(requestId, handler);
+  }
+
+  public onRequest<T>(requestId: string, handler: (params: any) => Promise<T>) {
+    this.requestHandlers.set(requestId, handler);
+  }
+
+  public broadcastEvent(
+    params: Omit<
+      Extract<InternalMessage, { opcode: InternalMessageOpcode.Event }>,
+      "opcode"
+    >
+  ) {
+    this.internalBroadcast({
+      opcode: InternalMessageOpcode.Event,
+      ...params,
     });
   }
 }

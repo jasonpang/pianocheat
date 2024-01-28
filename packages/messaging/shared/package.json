@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@pianocheat/constants": "workspace:*",
-    "@pianocheat/tsconfig": "workspace:*"
+    "@pianocheat/tsconfig": "workspace:*",
+    "rpc-websockets": "^7.9.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",

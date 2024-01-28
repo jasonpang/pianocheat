@@ -45,3 +45,6 @@ export type RpcRequestMessageHandler<T> = (
 ) => Promise<T>;
 
 export const HEARTBEAT_INTERVAL = 2000;
+export const WEBSOCKET_DEFAULT_PORT = 49273;
+
+export const Websocket;

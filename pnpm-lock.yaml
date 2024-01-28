@@ -125,6 +125,9 @@ importers:
       '@types/uuid':
         specifier: ^9.0.7
         version: 9.0.7
+      rpc-websockets:
+        specifier: ^7.9.0
+        version: 7.9.0
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -150,12 +153,15 @@ importers:
       bufferutil:
         specifier: ^4.0.8
         version: 4.0.8
+      rpc-websockets:
+        specifier: ^7.9.0
+        version: 7.9.0
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
       ws:
         specifier: ^8.16.0
-        version: 8.16.0(bufferutil@4.0.8)
+        version: 8.16.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     devDependencies:
       '@types/node':
         specifier: ^20.10.7
@@ -178,6 +184,43 @@ importers:
       '@pianocheat/tsconfig':
         specifier: workspace:*
         version: link:../../tsconfig
+      rpc-websockets:
+        specifier: ^7.9.0
+        version: 7.9.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.7
+        version: 20.10.7
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
+
+  packages/messaging/test:
+    dependencies:
+      '@pianocheat/constants':
+        specifier: workspace:*
+        version: link:../../constants
+      '@pianocheat/messaging.client':
+        specifier: workspace:*
+        version: link:../client
+      '@pianocheat/messaging.server':
+        specifier: workspace:*
+        version: link:../server
+      '@pianocheat/messaging.shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@pianocheat/tsconfig':
+        specifier: workspace:*
+        version: link:../../tsconfig
+      '@types/uuid':
+        specifier: ^9.0.7
+        version: 9.0.7
+      rpc-websockets:
+        specifier: ^7.9.0
+        version: 7.9.0
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
     devDependencies:
       '@types/node':
         specifier: ^20.10.7
@@ -246,7 +289,7 @@ importers:
         version: 9.0.1
       ws:
         specifier: ^8.16.0
-        version: 8.16.0(bufferutil@4.0.8)
+        version: 8.16.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
     devDependencies:
       '@types/node':
         specifier: ^20.10.7
@@ -1477,6 +1520,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /eventemitter3@4.0.7:
+    resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
+    dev: false
+
   /extract-zip@2.0.1:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
@@ -2608,6 +2655,18 @@ packages:
     dev: true
     optional: true
 
+  /rpc-websockets@7.9.0:
+    resolution: {integrity: sha512-DwKewQz1IUA5wfLvgM8wDpPRcr+nWSxuFxx5CbrI2z/MyyZ4nXLM86TvIA+cI1ZAdqC8JIBR1mZR55dzaLU+Hw==}
+    dependencies:
+      '@babel/runtime': 7.23.7
+      eventemitter3: 4.0.7
+      uuid: 8.3.2
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+    optionalDependencies:
+      bufferutil: 4.0.8
+      utf-8-validate: 5.0.10
+    dev: false
+
   /run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
     dependencies:
@@ -2969,6 +3028,19 @@ packages:
       punycode: 2.3.1
     dev: true
 
+  /utf-8-validate@5.0.10:
+    resolution: {integrity: sha512-Z6czzLq4u8fPOyx7TU6X3dvUZVvoJmxSQ+IcrlmagKhilxlhZgxPK6C5Jqbkw1IDUmFTM+cz9QDnnLTwDz/2gQ==}
+    engines: {node: '>=6.14.2'}
+    requiresBuild: true
+    dependencies:
+      node-gyp-build: 4.8.0
+    dev: false
+
+  /uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
+    dev: false
+
   /uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
@@ -3051,7 +3123,7 @@ packages:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
     dev: true
 
-  /ws@8.16.0(bufferutil@4.0.8):
+  /ws@8.16.0(bufferutil@4.0.8)(utf-8-validate@5.0.10):
     resolution: {integrity: sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -3064,6 +3136,7 @@ packages:
         optional: true
     dependencies:
       bufferutil: 4.0.8
+      utf-8-validate: 5.0.10
     dev: false
 
   /yallist@4.0.0:

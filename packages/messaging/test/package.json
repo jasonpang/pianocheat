@@ -1,5 +1,5 @@
 {
-  "name": "@pianocheat/messaging.client",
+  "name": "@pianocheat/messaging.test",
   "version": "1.0.0",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@pianocheat/constants": "workspace:*",
+    "@pianocheat/messaging.client": "workspace:*",
+    "@pianocheat/messaging.server": "workspace:*",
     "@pianocheat/messaging.shared": "workspace:*",
     "@pianocheat/tsconfig": "workspace:*",
     "@types/uuid": "^9.0.7",

@@ -9,12 +9,18 @@ import {
   JSONLike,
 } from "@pianocheat/messaging.shared";
 
-const PING_INTERVAL_MS = 2000;
-const AUTO_RECONNECT_DELAY_MS = 500;
-
 export class MessageServer<TEvents extends string> {
   private SOCKET_ID: number = 1;
   private server: WebSocketServer;
+  private eventHandlers: Map<
+    string,
+    (
+      params: Omit<
+        Extract<InternalMessage, { opcode: InternalMessageOpcode.Event }>,
+        "opcode"
+      >
+    ) => Promise<any>
+  > = new Map();
   private requestHandlers: Map<
     string,
     (data: InternalMessage, resolve: (value: any) => void) => Promise<any>
@@ -24,13 +30,6 @@ export class MessageServer<TEvents extends string> {
     { resolve: (value: any) => void; reject: (reason?: any) => void }
   > = new Map();
   private clientDelayedDisconnectMap: Map<number, NodeJS.Timeout> = new Map();
-  private onRequestMessage: (
-    id: string,
-    payload: JSONValue,
-    resolve: (value: unknown) => void
-  ) => void;
-  private onEvent: (id: string, payload: JSONValue) => void;
-  private autoDisconnectTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
     this.server = new WebSocketServer({
@@ -97,9 +96,14 @@ export class MessageServer<TEvents extends string> {
         }
         break;
       case InternalMessageOpcode.Event:
-        if (typeof this.onEvent === "function") {
-          console.log(`[Message Event Received]`, { id, payload });
-          this.onEvent(id, payload);
+        const eventHandler = this.eventHandlers.get(data.eventName);
+        if (!eventHandler) {
+          console.log(
+            `An event type message with name ${data.eventName} was received, but no corresponding event handler was registered.`
+          );
+          return;
+        } else {
+          eventHandler(data);
         }
         break;
     }
@@ -132,12 +136,9 @@ export class MessageServer<TEvents extends string> {
       socket.isAlive = false;
     });
 
-    this.send(
-      socket,
-      JSON.stringify({
-        kind: "ping",
-      })
-    );
+    this.internalSend(socket, {
+      opcode: InternalMessageOpcode.Heartbeat,
+    });
 
     setTimeout(() => {
       if (socket.isAlive) {
@@ -145,7 +146,7 @@ export class MessageServer<TEvents extends string> {
       } else {
         socket.terminate();
       }
-    }, PING_INTERVAL_MS);
+    }, HEARTBEAT_INTERVAL);
   }
 
   private internalSend(socket: ExtendedWebSocket, message: InternalMessage) {
@@ -162,25 +163,23 @@ export class MessageServer<TEvents extends string> {
     }
   }
 
-  public registerRequestHandler<T>(
-    requestId: string,
-    handler: (params: any) => Promise<T>
-  ) {
+  public onEvent<T>(requestId: string, handler: (params: any) => Promise<T>) {
+    this.eventHandlers.set(requestId, handler);
+  }
+
+  public onRequest<T>(requestId: string, handler: (params: any) => Promise<T>) {
     this.requestHandlers.set(requestId, handler);
   }
 
-  broadcastEvent(payload: JSONValue) {
-    const id = uuidv4();
-
-    for (const client of this.server.clients) {
-      this.send(
-        client as ExtendedWebSocket,
-        JSON.stringify({
-          id,
-          kind: "event",
-          payload,
-        })
-      );
-    }
+  public broadcastEvent(
+    params: Omit<
+      Extract<InternalMessage, { opcode: InternalMessageOpcode.Event }>,
+      "opcode"
+    >
+  ) {
+    this.internalBroadcast({
+      opcode: InternalMessageOpcode.Event,
+      ...params,
+    });
   }
 }
