@@ -1,12 +1,13 @@
+import fs from 'fs'
 import WebMidi, {
-  InputEventNoteon,
+  InputEventControlchange,
   InputEventNoteoff,
-  Output,
-  InputEventControlchange
+  InputEventNoteon,
+  Output
 } from 'webmidi'
 import { NotePress, NoteRelease, useStore } from '../../lib/store'
-import { Player } from '../builder/interfaces'
-import { PitchToByte, PitchToStr } from '../builder/Utils'
+import { PitchToByte } from '../builder/Utils'
+import { Player, RecordingEntry } from '../builder/interfaces'
 import { ParsedNote } from '../parser/interfaces'
 
 if (typeof window !== 'undefined') {
@@ -14,6 +15,7 @@ if (typeof window !== 'undefined') {
 }
 
 export default class SingleVoicePlayback {
+  private recording: RecordingEntry[] = []
   private upcomingNotePressQueueForPlayers: Record<Player, NotePress[]> = {
     'player-computer': [],
     'player-left-hand': [],
@@ -52,9 +54,25 @@ export default class SingleVoicePlayback {
     this.output = output
   }
 
+  public saveRecording() {
+    localStorage.setItem('recording', JSON.stringify(this.recording))
+    fs.writeFileSync(
+      `/Users/jason/Documents/Test Recordings/${new Date()
+        .toLocaleString()
+        .replace(/\/|,| |:/g, '-')}.json`,
+      JSON.stringify(this.recording, null, 4)
+    )
+  }
+
   public processControlChange(e: InputEventControlchange) {
     const shouldFlipPedalPolarity = false
     if (e.data[1] === 64 || e.data[1] === 66 || e.data[1] === 67) {
+      this.recording.push({
+        timestamp: performance.now(),
+        type: 'controlchange',
+        controller: e.data[1],
+        value: shouldFlipPedalPolarity ? 127 - e.value : e.value
+      })
       this.output.sendControlChange(
         e.data[1],
         shouldFlipPedalPolarity ? 127 - e.value : e.value,
@@ -198,6 +216,11 @@ export default class SingleVoicePlayback {
     if (this.output != null) {
       delete pressedNotes[physicalPitch]
       for (const mappedPitch of mappedPitches) {
+        this.recording.push({
+          timestamp: performance.now(),
+          type: 'noteoff',
+          note: mappedPitch
+        })
         this.output.stopNote(mappedPitch, 1, {
           rawVelocity: true,
           velocity: 64
@@ -235,6 +258,12 @@ export default class SingleVoicePlayback {
         }
         pressedNotes[targetNotePress.pitch].push(PitchToByte(element.pitch))
 
+        this.recording.push({
+          timestamp: performance.now(),
+          type: 'noteon',
+          note: PitchToByte(element.pitch),
+          velocity: targetNotePress.velocity
+        })
         this.output.playNote(PitchToByte(element.pitch), 1, {
           rawVelocity: true,
           velocity: targetNotePress.velocity

@@ -1,4 +1,4 @@
-import WebMidi, { InputEventNoteon, InputEventNoteoff } from 'webmidi'
+import WebMidi from 'webmidi'
 import SingleVoicePlayback from '../performer/SingleVoicePlayback'
 
 export default class Midi {
@@ -8,7 +8,7 @@ export default class Midi {
     return new Promise<void>((resolve, reject) => {
       if (typeof window !== 'undefined') {
         if (WebMidi.enabled) {
-          return
+          return resolve()
         }
 
         WebMidi.enable((err) => {
@@ -46,7 +46,6 @@ export default class Midi {
       console.log('pedal input found:', pedalInput)
       pedalInput.removeListener('controlchange')
       pedalInput.addListener('controlchange', 'all', (e) => {
-        console.log(e)
         this.processor.processControlChange(e)
       })
     } else {
@@ -65,6 +64,10 @@ export default class Midi {
     input.addListener('noteoff', 'all', (e) => {
       this.processor.processNoteOnOrOff(e)
     })
+  }
+
+  getProcessor() {
+    return this.processor
   }
 
   setProcessor(processor: SingleVoicePlayback) {

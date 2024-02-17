@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect } from 'react'
-import Typography from '@material-ui/core/Typography'
 import { Box } from '@material-ui/core'
+import Typography from '@material-ui/core/Typography'
+import React, { useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { ActiveMode, useStore } from '../lib/store'
 import { getStartCaseFromFilePath } from '../lib/utils'
@@ -29,28 +29,31 @@ export default React.memo(function Play({
         } as any
       })
     }
-  }, [])
+  }, [appConfig.defaultScore, update])
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    update((draft) => {
-      const musicXmlFiles = acceptedFiles.filter((x) => x.path.endsWith('xml'))
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      update((draft) => {
+        const musicXmlFiles = acceptedFiles // .filter((x) => x.path.endsWith('xml'))
 
-      if (!musicXmlFiles.length) {
-        return
-      } else {
-        draft.performance = {
-          score: {
-            musicXmlPath: musicXmlFiles[0].path,
-            name: getStartCaseFromFilePath(musicXmlFiles[0].name)
-          },
-          mode: ActiveMode.Preview,
-          preview: {
-            time: 0
-          }
-        } as any
-      }
-    })
-  }, [])
+        if (!musicXmlFiles.length) {
+          return
+        } else {
+          draft.performance = {
+            score: {
+              musicXmlPath: musicXmlFiles[0].path,
+              name: getStartCaseFromFilePath(musicXmlFiles[0].name)
+            },
+            mode: ActiveMode.Preview,
+            preview: {
+              time: 0
+            }
+          } as any
+        }
+      })
+    },
+    [update]
+  )
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,

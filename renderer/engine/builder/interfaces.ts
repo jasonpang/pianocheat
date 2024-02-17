@@ -1,5 +1,27 @@
 import { ParsedNote, ParsedScore } from '../parser/interfaces'
 
+export interface RecordingEntryControlChange {
+  timestamp: number
+  type: 'controlchange'
+  controller: number
+  value: number
+}
+export interface RecordingEntryNoteOff {
+  timestamp: number
+  type: 'noteoff'
+  note: number
+}
+export interface RecordingEntryNoteOn {
+  timestamp: number
+  type: 'noteon'
+  note: number
+  velocity: number
+}
+export type RecordingEntry =
+  | RecordingEntryControlChange
+  | RecordingEntryNoteOff
+  | RecordingEntryNoteOn
+
 export interface CachedNoteSetInfo {
   time: number
   noteSet: ParsedNote[]
