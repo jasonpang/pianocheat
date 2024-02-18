@@ -21,17 +21,7 @@ export class AppContext {
     //     },
     //   },
     // });
-    this.messageServer = new MessageServer(
-      (id: string, payload: any, resolve: (value: unknown) => void) => {
-        console.log("On Request Message:", id, payload);
-        if (payload === "test") {
-          resolve("test-reply");
-        }
-      },
-      (id: string, payload: any) => {
-        console.log("On Event:", id, payload);
-      }
-    );
+    this.messageServer = new MessageServer();
     this.engine = new AppEngine(this);
   }
 

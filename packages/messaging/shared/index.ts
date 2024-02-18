@@ -44,7 +44,11 @@ export type RpcRequestMessageHandler<T> = (
   message: RpcRequestMessage<T>
 ) => Promise<T>;
 
+export interface ApplicationProtocol {
+  rpc: {
+    [x: string]: (...args: any) => any;
+  };
+}
+
 export const HEARTBEAT_INTERVAL = 2000;
 export const WEBSOCKET_DEFAULT_PORT = 49273;
-
-export const Websocket;

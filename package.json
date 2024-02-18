@@ -10,6 +10,7 @@
     "backend": "pnpm --parallel --stream -r run backend",
     "frontend": "pnpm --parallel --stream -r run frontend",
     "dev": "pnpm --parallel --stream -r run dev",
+    "test": "pnpm --parallel --stream -r run test",
     "build": "pnpm --stream -r run build",
     "start": "pnpm --stream -r start",
     "clean": "pnpm -r run clean"
