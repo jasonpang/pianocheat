@@ -11,6 +11,10 @@ export interface RecordingEntryNoteOff {
   type: 'noteoff'
   note: number
 }
+export interface RecordingEntryMarker {
+  timestamp: number
+  type: 'marker'
+}
 export interface RecordingEntryNoteOn {
   timestamp: number
   type: 'noteon'
@@ -21,6 +25,7 @@ export type RecordingEntry =
   | RecordingEntryControlChange
   | RecordingEntryNoteOff
   | RecordingEntryNoteOn
+  | RecordingEntryMarker
 
 export interface CachedNoteSetInfo {
   time: number

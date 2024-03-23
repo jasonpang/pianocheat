@@ -55,7 +55,6 @@ export default class SingleVoicePlayback {
   }
 
   public saveRecording() {
-    localStorage.setItem('recording', JSON.stringify(this.recording))
     fs.writeFileSync(
       `/Users/jason/Documents/Test Recordings/${new Date()
         .toLocaleString()
@@ -67,12 +66,24 @@ export default class SingleVoicePlayback {
   public processControlChange(e: InputEventControlchange) {
     const shouldFlipPedalPolarity = false
     if (e.data[1] === 64 || e.data[1] === 66 || e.data[1] === 67) {
-      this.recording.push({
-        timestamp: performance.now(),
-        type: 'controlchange',
-        controller: e.data[1],
-        value: shouldFlipPedalPolarity ? 127 - e.value : e.value
-      })
+      if (
+        e.data[1] === 66 &&
+        (shouldFlipPedalPolarity ? e.value === 0 : e.value !== 0)
+      ) {
+        this.saveRecording()
+        this.recording = []
+        // this.recording.push({
+        //   timestamp: performance.now(),
+        //   type: 'marker'
+        // })
+      } else {
+        this.recording.push({
+          timestamp: performance.now(),
+          type: 'controlchange',
+          controller: e.data[1],
+          value: shouldFlipPedalPolarity ? 127 - e.value : e.value
+        })
+      }
       this.output.sendControlChange(
         e.data[1],
         shouldFlipPedalPolarity ? 127 - e.value : e.value,
@@ -82,6 +93,20 @@ export default class SingleVoicePlayback {
   }
 
   public processNoteOnOrOff(e: InputEventNoteon | InputEventNoteoff) {
+    if (e.note.number === 108) {
+      console.log('Cleared recording')
+      this.recording = []
+      return
+    } else if (e.note.number === 21) {
+      console.log('going back to measure', window.newMeasureNumber || 0)
+      window.dispatchEvent(
+        new CustomEvent('jumpToMeasure', {
+          detail: window.newMeasureNumber || 0
+        })
+      )
+      return
+    }
+
     const player = this.getPlayerForEvent(e.note.number)
 
     const score =

@@ -1,6 +1,6 @@
 import { Box, useMediaQuery } from '@material-ui/core'
-import React, { useCallback, useMemo, useState } from 'react'
-import { Player } from '../builder/interfaces'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useStore } from '../../lib/store'
 import {
   DARK_LINE_COLOR,
   LIGHT_LINE_COLOR,
@@ -8,11 +8,10 @@ import {
   NOTE_BOX_SHADOW,
   NOTE_COLOR_PLAYER_LEFT_HAND,
   NOTE_COLOR_PLAYER_RIGHT_HAND,
-  NOTE_WIDTH,
   VERTICAL_SPACE_BETWEEN_MEASURE_ROWS
 } from '../../vars'
+import { Player } from '../builder/interfaces'
 import StaffNotes from './StaffNotes'
-import { useStore } from '../../lib/store'
 
 export interface MeasureProps {
   scoreMeasureIdx: number
@@ -57,6 +56,88 @@ export default React.memo(function Measure(props: MeasureProps) {
     [setMeasureDimensions]
   )
 
+  const jumpToMeasure = useCallback(
+    (measureNumber: number) => {
+      const newMeasureNumber = measureNumber
+      window.newMeasureNumber = newMeasureNumber
+      if (!noteSets || !cachedNoteSetsByMeasure) {
+        return
+      }
+
+      for (const _player of Object.keys(noteSets)) {
+        const player = _player as Player
+        const measureInfoForPlayer =
+          cachedNoteSetsByMeasure[player][newMeasureNumber]
+
+        let targetNoteSetTime: number = 0
+        if (!measureInfoForPlayer) {
+          // First measure may only have right hand and no left hand
+          // And jumping is asking both hands to find first note for each hand
+          // Keep going until we find a measure that has something
+          for (let i = newMeasureNumber; i < 9999; i++) {
+            let scanNextMeasureInfoForPlayer =
+              cachedNoteSetsByMeasure[player][newMeasureNumber]
+            if (scanNextMeasureInfoForPlayer) {
+              targetNoteSetTime = scanNextMeasureInfoForPlayer.noteSets[0].time
+            }
+          }
+        } else {
+          targetNoteSetTime = measureInfoForPlayer.noteSets[0].time
+        }
+
+        const noteSetTimesAsFloat = Object.keys(noteSets[player])
+          .map((x) => parseFloat(x))
+          .sort((a, b) => a - b)
+
+        const noteSetTimesWithoutRests = noteSetTimesAsFloat
+          .filter((noteSetTime) => {
+            const noteSetAtTime = noteSets[player][noteSetTime]
+            const isNoteSetAllRests =
+              noteSetAtTime.filter((x) => x.rest).length ===
+              noteSetAtTime.length
+
+            return !isNoteSetAllRests
+          })
+          .sort((a, b) => a - b)
+
+        const noteSetWithoutRestsIdx = noteSetTimesWithoutRests.findIndex(
+          (x) => x >= targetNoteSetTime
+        )
+
+        if (noteSetWithoutRestsIdx === -1) {
+          console.log(
+            'Could not update to measure.',
+            Object.keys(noteSets),
+            targetNoteSetTime
+          )
+          return
+        }
+
+        const noteSetTime = noteSetTimesWithoutRests[noteSetWithoutRestsIdx]
+        const noteSetRegularIdx = noteSetTimesAsFloat.findIndex(
+          (x) => x === noteSetTime
+        )
+        update((x) => {
+          x.performance!.cursors[player] = noteSetRegularIdx
+        })
+      }
+    },
+    [cachedNoteSetsByMeasure, noteSets, update]
+  )
+
+  useEffect(() => {
+    const handleJumpToMeasure = (event: Event) => {
+      const measureNumber = (event as CustomEvent<number>).detail
+      jumpToMeasure(measureNumber)
+    }
+
+    window.addEventListener('jumpToMeasure', handleJumpToMeasure)
+
+    return () => {
+      window.removeEventListener('jumpToMeasure', handleJumpToMeasure)
+    }
+  }, [jumpToMeasure])
+
   return (
     <div
       id={`measure/${props.scoreMeasureIdx + 1}`}
@@ -92,69 +173,7 @@ export default React.memo(function Measure(props: MeasureProps) {
           cursor: 'pointer'
         }}
         onClick={() => {
-          const newMeasureNumber = props.scoreMeasureIdx
-          if (!noteSets || !cachedNoteSetsByMeasure) {
-            return
-          }
-
-          for (const _player of Object.keys(noteSets)) {
-            const player = _player as Player
-            const measureInfoForPlayer =
-              cachedNoteSetsByMeasure[player][newMeasureNumber]
-
-            let targetNoteSetTime: number = 0
-            if (!measureInfoForPlayer) {
-              // First measure may only have right hand and no left hand
-              // And jumping is asking both hands to find first note for each hand
-              // Keep going until we find a measure that has something
-              for (let i = newMeasureNumber; i < 9999; i++) {
-                let scanNextMeasureInfoForPlayer =
-                  cachedNoteSetsByMeasure[player][newMeasureNumber]
-                if (scanNextMeasureInfoForPlayer) {
-                  targetNoteSetTime =
-                    scanNextMeasureInfoForPlayer.noteSets[0].time
-                }
-              }
-            } else {
-              targetNoteSetTime = measureInfoForPlayer.noteSets[0].time
-            }
-
-            const noteSetTimesAsFloat = Object.keys(noteSets[player])
-              .map((x) => parseFloat(x))
-              .sort((a, b) => a - b)
-
-            const noteSetTimesWithoutRests = noteSetTimesAsFloat
-              .filter((noteSetTime) => {
-                const noteSetAtTime = noteSets[player][noteSetTime]
-                const isNoteSetAllRests =
-                  noteSetAtTime.filter((x) => x.rest).length ===
-                  noteSetAtTime.length
-
-                return !isNoteSetAllRests
-              })
-              .sort((a, b) => a - b)
-
-            const noteSetWithoutRestsIdx = noteSetTimesWithoutRests.findIndex(
-              (x) => x >= targetNoteSetTime
-            )
-
-            if (noteSetWithoutRestsIdx === -1) {
-              console.log(
-                'Could not update to measure.',
-                Object.keys(noteSets),
-                targetNoteSetTime
-              )
-              return
-            }
-
-            const noteSetTime = noteSetTimesWithoutRests[noteSetWithoutRestsIdx]
-            const noteSetRegularIdx = noteSetTimesAsFloat.findIndex(
-              (x) => x === noteSetTime
-            )
-            update((x) => {
-              x.performance!.cursors[player] = noteSetRegularIdx
-            })
-          }
+          jumpToMeasure(props.scoreMeasureIdx)
         }}
       >
         {props.scoreMeasureIdx + 1}

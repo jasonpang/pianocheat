@@ -119,12 +119,12 @@ export default React.memo(function SheetMusic(props: SheetMusicProps) {
         )
       })
 
-      return () => {
-        const processor = midi.getProcessor()
-        if (processor) {
-          processor.saveRecording()
-        }
-      }
+      // return () => {
+      //   const processor = midi.getProcessor()
+      //   if (processor) {
+      //     processor.saveRecording()
+      //   }
+      // }
     }
   }, [filePath, update])
 
