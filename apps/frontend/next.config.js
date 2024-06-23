@@ -5,6 +5,7 @@ const nextConfig = {
     unoptimized: true,
   },
   reactStrictMode: false,
+  transpilePackages: ["@pianocheat/ui"],
 };
 
 module.exports = nextConfig;
