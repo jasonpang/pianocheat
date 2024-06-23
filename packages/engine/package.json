@@ -11,7 +11,6 @@
   "dependencies": {
     "@pianocheat/tsconfig": "workspace:*",
     "@pianocheat/models": "workspace:*",
-    "@pianocheat/messaging.server": "workspace:*",
     "webmidi": "^3.1.9"
   },
   "devDependencies": {
