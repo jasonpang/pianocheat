@@ -7,7 +7,6 @@
   },
   "packageManager": "pnpm@9.4.0",
   "scripts": {
-    "backend": "pnpm --parallel --stream -r run backend",
     "frontend": "pnpm --parallel --stream -r run frontend",
     "dev": "pnpm --parallel --stream -r run dev",
     "build": "pnpm --stream -r run build",
