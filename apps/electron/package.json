@@ -1,9 +1,10 @@
 {
   "name": "@pianocheat/electron",
-  "main": "build/main.js",
+  "exports": "./build/main.js",
+  "type": "module",
   "scripts": {
     "dev": "tsc --watch",
-    "electron": "electron ./build/main.js 3000",
+    "app": "electron ./build/main.mjs 3000",
     "test": "node --test --watch",
     "clean": "rm -rf ./build; rm -rf ./node_modules"
   },

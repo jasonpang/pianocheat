@@ -1,15 +1,8 @@
-import { AppContext } from "@pianocheat/engine";
-import electron, { BrowserWindow, app, net, protocol } from "electron";
+import electron, { Menu, app, net, protocol } from "electron";
 import log from "electron-log";
-import serve from "electron-serve";
-import createWindow from "./AppWindow";
+import createWindow from "./AppWindow.mjs";
 
 const isProd: boolean = process.env.NODE_ENV === "production";
-
-async function initializeAppContext(window: BrowserWindow) {
-  const appContext = new AppContext(window);
-  await appContext.initialize();
-}
 
 async function initializeAppWindow() {
   const mainWindow = createWindow("main", {
@@ -18,13 +11,11 @@ async function initializeAppWindow() {
   });
   mainWindow.maximize();
 
-  initializeAppContext(mainWindow);
-
   if (isProd) {
     await mainWindow.loadURL(`app://./home.html`);
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/home`);
+    await mainWindow.loadURL(`http://localhost:${port}`);
   }
 
   return mainWindow;
@@ -32,11 +23,6 @@ async function initializeAppWindow() {
 
 async function onAppReady() {
   log.info("Starting app");
-
-  const image = electron.nativeImage.createFromPath(
-    app.getAppPath() + "/resources/icon.png"
-  );
-  app.dock.setIcon(image);
 
   protocol.handle("file", (request) =>
     net.fetch(request.url.replace("file:///", ""))
@@ -52,7 +38,7 @@ function main() {
   });
 
   if (isProd) {
-    serve({ directory: "app" });
+    // serve({ directory: "app" });
   } else {
     app.setPath("userData", `${app.getPath("userData")} (development)`);
   }
@@ -64,7 +50,18 @@ function main() {
 
   // This is used to mantain single open window.
   if (app.requestSingleInstanceLock()) {
-    app.on("ready", onAppReady);
+    const dockMenu = Menu.buildFromTemplate([]);
+
+    app.whenReady().then(() => {
+      if (process.platform === "darwin") {
+        const image = electron.nativeImage.createFromPath(
+          app.getAppPath() + "/resources/icon.png"
+        );
+        app.dock.setIcon(image);
+        app.dock.setMenu(dockMenu);
+      }
+      onAppReady();
+    });
   } else {
     app.quit();
   }
