@@ -8,17 +8,17 @@
     "clean": "rm -rf ./build; rm -rf ./node_modules"
   },
   "dependencies": {
-    "electron-log": "^5.0.3",
-    "electron-serve": "^1.2.0",
-    "electron-store": "^8.1.0",
+    "electron-log": "^5.1.5",
+    "electron-serve": "^2.0.0",
+    "electron-store": "^10.0.0",
     "@pianocheat/models": "workspace:*",
     "@pianocheat/engine": "workspace:*",
-    "mutative": "^1.0.2",
+    "mutative": "^1.0.6",
     "@pianocheat/tsconfig": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.10.7",
-    "electron": "^28.1.1",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.14.8",
+    "electron": "^31.0.2",
+    "typescript": "^5.5.2"
   }
 }

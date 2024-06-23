@@ -11,14 +11,14 @@
   "dependencies": {
     "@pianocheat/constants": "workspace:*",
     "@pianocheat/tsconfig": "workspace:*",
-    "@types/uuid": "^9.0.7",
+    "@types/uuid": "^10.0.0",
     "bufferutil": "^4.0.8",
-    "uuid": "^9.0.1",
-    "ws": "^8.16.0"
+    "uuid": "^10.0.0",
+    "ws": "^8.17.1"
   },
   "devDependencies": {
-    "@types/node": "^20.10.7",
+    "@types/node": "^20.14.8",
     "@types/ws": "^8.5.10",
-    "typescript": "^5.3.3"
+    "typescript": "^5.5.2"
   }
 }

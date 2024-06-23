@@ -12,7 +12,7 @@
   "dependencies": {
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.0.4",
+    "next": "14.2.4",
     "@pianocheat/ui": "workspace:*",
     "@pianocheat/tsconfig": "workspace:*",
     "@pianocheat/messaging.client": "workspace:*"
@@ -22,7 +22,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.0.4"
+    "eslint": "^9",
+    "eslint-config-next": "14.2.4"
   }
 }
